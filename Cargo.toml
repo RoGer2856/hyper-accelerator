@@ -1,0 +1,28 @@
+[package]
+name = "hyper-accelerator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4"
+hyper = { version = "1.0.0-rc.3", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+serde = "1.0"
+serde_json = "1.0"
+parking_lot = "0.12"
+hmac = "0.12.1"
+jwt = "0.16.0"
+sha2 = "0.10.2"
+crypto-common = "0.1.6"
+cookie = "0.17"
+regex = "1.7"
+
+[dev-dependencies]
+reqwest = "0.11"
+serial_test = "2.0"
+env_logger = "0.10"
+querystring = "1.1"
+serde = { version = "*", features = ["derive"] }
+clap = { version = "4.2", features = ["derive"] }
