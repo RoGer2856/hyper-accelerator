@@ -2,10 +2,9 @@ use std::sync::Arc;
 
 use crate::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait},
+    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
     response::create_empty_response,
 };
 
@@ -46,7 +45,7 @@ pub trait AuthenticatorRequestContext {
 
 pub fn add_access_token_to_resp(
     access_token: String,
-    resp: &mut hyper::Response<Body>,
+    resp: &mut Response,
 ) -> Result<(), AuthenticatorError> {
     let header_name = "Set-Cookie";
     let cookie = cookie::CookieBuilder::new("access_token", access_token)
@@ -68,7 +67,7 @@ pub async fn access_token_handler<
     app_context: Arc<ApplicationContextType>,
     mut request_context: RequestContextType,
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     let mut access_token = None;
     for cookie in crate::cookies::cookies_iter(crate::cookies::CookieType::Cookie, req.headers()) {
         if cookie.name() == "access_token" && !crate::cookies::is_cookie_expired_by_date(&cookie) {

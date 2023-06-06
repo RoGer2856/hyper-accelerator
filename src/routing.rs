@@ -4,14 +4,13 @@ use regex::Regex;
 
 use crate::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn},
+    request_handler::{ErrorResponse, RequestHandlerFn, Response},
     response::create_empty_response,
 };
 
 type RouterFnReturnType =
-    Pin<Box<dyn Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync>>;
+    Pin<Box<dyn Future<Output = Result<Response, ErrorResponse>> + Send + Sync>>;
 
 #[allow(type_alias_bounds)]
 type RouterFnType<
@@ -72,7 +71,7 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
     }
 
     pub fn path<
-        ReturnType: Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync + 'static,
+        ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
     >(
         mut self,
         methods: &[hyper::Method],
@@ -92,7 +91,7 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
     }
 
     pub fn path_with_params<
-        ReturnType: Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync + 'static,
+        ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
     >(
         mut self,
         methods: &[hyper::Method],
@@ -138,7 +137,7 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
         req: hyper::Request<hyper::body::Incoming>,
         app_context: Arc<ApplicationContextType>,
         request_context: RequestContextType,
-    ) -> Result<hyper::Response<Body>, ErrorResponse> {
+    ) -> Result<Response, ErrorResponse> {
         for router_record in self.routing_table.iter() {
             if router_record.methods.contains(req.method()) {
                 let path = req.uri().path().to_string();
@@ -170,7 +169,7 @@ pub async fn router_fn<
     req: hyper::Request<hyper::body::Incoming>,
     router: Arc<Router<ApplicationContextType, RequestContextType>>,
     request_context: RequestContextType,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     log::debug!("Request = {} {}", req.method(), req.uri().path());
 
     router

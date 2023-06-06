@@ -5,11 +5,12 @@ use crate::{
     request_context_trait::RequestContextTrait,
 };
 
-pub struct ErrorResponse(pub hyper::Response<Body>);
+pub type Response = hyper::Response<Body>;
+pub struct ErrorResponse(pub Response);
 
 impl<T> From<T> for ErrorResponse
 where
-    T: Into<hyper::Response<Body>>,
+    T: Into<Response>,
 {
     fn from(e: T) -> Self {
         Self(e.into())
@@ -17,11 +18,11 @@ where
 }
 
 pub trait RequestHandlerReturnTrait:
-    Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync + 'static
+    Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static
 {
 }
 
-impl<T: Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync + 'static>
+impl<T: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static>
     RequestHandlerReturnTrait for T
 {
 }
@@ -29,7 +30,7 @@ impl<T: Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + S
 pub trait RequestHandlerFn<
     ApplicationContextType: ApplicationContextTrait,
     RequestContextType: RequestContextTrait,
-    ReturnType: Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync + 'static,
+    ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
 >:
     Fn(
         hyper::Request<hyper::body::Incoming>,
@@ -45,7 +46,7 @@ pub trait RequestHandlerFn<
 impl<
         ApplicationContextType: ApplicationContextTrait,
         RequestContextType: RequestContextTrait,
-        ReturnType: Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync + 'static,
+        ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
         T: Fn(
                 hyper::Request<hyper::body::Incoming>,
                 Arc<ApplicationContextType>,

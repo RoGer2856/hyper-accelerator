@@ -6,13 +6,12 @@ use clap::Parser;
 use hyper::StatusCode;
 use hyper_accelerator::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     body_utils::create_static_str_body,
     content_type::ContentType,
     error::Error,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::ErrorResponse,
+    request_handler::{ErrorResponse, Response},
     response::{create_empty_response, create_file_response},
     server::run_http1_tcp_server,
 };
@@ -23,7 +22,7 @@ pub struct Cli {
     #[arg(
         short('l'),
         long("listener-address"),
-        help("Address where the server accepts the connections (e.g., 127.0.0.1)")
+        help("Address where the server accepts the connections (e.g., 127.0.0.1:80)")
     )]
     listener_address: String,
 }
@@ -41,7 +40,7 @@ async fn file_from_memory(
     _req: hyper::Request<hyper::body::Incoming>,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     create_file_response(
         StatusCode::OK,
         create_static_str_body(

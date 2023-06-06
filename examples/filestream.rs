@@ -6,14 +6,13 @@ use clap::Parser;
 use hyper::StatusCode;
 use hyper_accelerator::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     body_utils::create_stream_body,
     content_type::ContentType,
     error::Error,
     filestream::FileStream,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::ErrorResponse,
+    request_handler::{ErrorResponse, Response},
     response::{create_empty_response, create_file_response},
     server::run_http1_tcp_server,
 };
@@ -24,7 +23,7 @@ pub struct Cli {
     #[arg(
         short('l'),
         long("listener-address"),
-        help("Address where the server accepts the connections (e.g., 127.0.0.1)")
+        help("Address where the server accepts the connections (e.g., 127.0.0.1:80)")
     )]
     listener_address: String,
 }
@@ -42,7 +41,7 @@ async fn file(
     _req: hyper::Request<hyper::body::Incoming>,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     let filestream = FileStream::new("examples/gandalf-quote.txt")
         .await
         .inspect_err(|e| log::error!("Could not open file, error = {:?}", e))

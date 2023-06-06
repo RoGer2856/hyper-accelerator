@@ -5,11 +5,11 @@ use crate::{
     body_utils::{
         create_bytes_body, create_json_body, create_static_str_body, create_stream_body,
         create_string_body, SerializeToJsonBodyError,
-    },
+    }, request_handler::Response,
 };
 
-pub fn create_empty_response(status_code: hyper::StatusCode) -> hyper::Response<Body> {
-    let mut response = hyper::Response::default();
+pub fn create_empty_response(status_code: hyper::StatusCode) -> Response {
+    let mut response = Response::default();
     *response.status_mut() = status_code;
     response
 }
@@ -17,8 +17,8 @@ pub fn create_empty_response(status_code: hyper::StatusCode) -> hyper::Response<
 pub fn create_json_response<T: serde::Serialize>(
     status: hyper::StatusCode,
     data: &T,
-) -> Result<hyper::Response<Body>, SerializeToJsonBodyError> {
-    let mut resp = hyper::Response::default();
+) -> Result<Response, SerializeToJsonBodyError> {
+    let mut resp = Response::default();
     *resp.status_mut() = status;
 
     resp.headers_mut()
@@ -33,8 +33,8 @@ pub fn create_static_str_response(
     status: hyper::StatusCode,
     text: &'static str,
     content_type: impl Into<&'static str>,
-) -> hyper::Response<Body> {
-    let mut resp = hyper::Response::default();
+) -> Response {
+    let mut resp = Response::default();
     *resp.status_mut() = status;
 
     resp.headers_mut().insert(
@@ -51,8 +51,8 @@ pub fn create_string_response(
     status: hyper::StatusCode,
     text: impl ToString,
     content_type: impl Into<&'static str>,
-) -> hyper::Response<Body> {
-    let mut resp = hyper::Response::default();
+) -> Response {
+    let mut resp = Response::default();
     *resp.status_mut() = status;
 
     resp.headers_mut().insert(
@@ -69,8 +69,8 @@ pub fn create_bytes_response(
     status: hyper::StatusCode,
     bytes: &[u8],
     content_type: impl Into<&'static str>,
-) -> hyper::Response<Body> {
-    let mut resp = hyper::Response::default();
+) -> Response {
+    let mut resp = Response::default();
     *resp.status_mut() = status;
 
     resp.headers_mut().insert(
@@ -87,8 +87,8 @@ pub fn create_stream_response(
     status: hyper::StatusCode,
     stream: impl AsyncStream<Vec<u8>>,
     content_type: impl Into<&'static str>,
-) -> hyper::Response<Body> {
-    let mut resp = hyper::Response::default();
+) -> Response {
+    let mut resp = Response::default();
     *resp.status_mut() = status;
 
     resp.headers_mut().insert(
@@ -106,8 +106,8 @@ pub fn create_file_response(
     body: Body,
     content_type: impl Into<&'static str>,
     filename: &str,
-) -> Result<hyper::Response<Body>, InvalidHeaderValue> {
-    let mut resp = hyper::Response::default();
+) -> Result<Response, InvalidHeaderValue> {
+    let mut resp = Response::default();
     *resp.status_mut() = status;
 
     resp.headers_mut().insert(

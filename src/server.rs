@@ -8,17 +8,16 @@ use tokio::{
 
 use crate::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     error::Error,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn},
+    request_handler::{ErrorResponse, RequestHandlerFn, Response},
 };
 
 pub async fn run_http1_tcp_server<
     SocketAddressType: ToSocketAddrs,
     ApplicationContextType: ApplicationContextTrait,
     RequestContextType: RequestContextTrait,
-    ReturnType: Future<Output = Result<hyper::Response<Body>, ErrorResponse>> + Send + Sync + 'static,
+    ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
     RequestHandlerFnType: RequestHandlerFn<ApplicationContextType, RequestContextType, ReturnType>,
 >(
     listener_address: SocketAddressType,
@@ -58,8 +57,8 @@ pub async fn run_http1_tcp_server<
 }
 
 async fn service_helper(
-    request_handler_task: impl Future<Output = Result<hyper::Response<Body>, ErrorResponse>>,
-) -> Result<hyper::Response<Body>, Error> {
+    request_handler_task: impl Future<Output = Result<Response, ErrorResponse>>,
+) -> Result<Response, Error> {
     match request_handler_task.await {
         Ok(resp) => Ok(resp),
         Err(resp) => Ok(resp.0),

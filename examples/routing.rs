@@ -6,11 +6,10 @@ use clap::Parser;
 use hyper::StatusCode;
 use hyper_accelerator::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     error::Error,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::ErrorResponse,
+    request_handler::{ErrorResponse, Response},
     response::{create_empty_response, create_json_response},
     routing::{router_fn, RouterBuilder},
     server::run_http1_tcp_server,
@@ -22,7 +21,7 @@ pub struct Cli {
     #[arg(
         short('l'),
         long("listener-address"),
-        help("Address where the server accepts the connections (e.g., 127.0.0.1)")
+        help("Address where the server accepts the connections (e.g., 127.0.0.1:80)")
     )]
     listener_address: String,
 }
@@ -40,27 +39,27 @@ async fn index(
     _req: hyper::Request<hyper::body::Incoming>,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     let response_body = "/ -> this help message\n\
         /hello -> sends hello back\n\
         /echo?<query_params> -> echoes every query param back\n\
         /resources/<resource-id> -> queries the resource with the given id";
-    Ok(hyper::Response::new(response_body.into()))
+    Ok(Response::new(response_body.into()))
 }
 
 async fn hello(
     _req: hyper::Request<hyper::body::Incoming>,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
-    Ok(hyper::Response::new("Hello World!".into()))
+) -> Result<Response, ErrorResponse> {
+    Ok(Response::new("Hello World!".into()))
 }
 
 async fn echo(
     req: hyper::Request<hyper::body::Incoming>,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     let mut response_body = String::new();
 
     for param in querystring::querify(req.uri().query().unwrap_or("")) {
@@ -73,7 +72,7 @@ async fn echo(
         response_body += "\n";
     }
 
-    Ok(hyper::Response::new(response_body.into()))
+    Ok(Response::new(response_body.into()))
 }
 
 #[derive(serde::Serialize)]
@@ -86,7 +85,7 @@ async fn resource_by_id(
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
     id: String,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     Ok(create_json_response(StatusCode::OK, &Resource { id })
         .inspect_err(|e| log::error!("Could not create JSON response, error = {:?}", e))
         .map_err(|_| create_empty_response(StatusCode::INTERNAL_SERVER_ERROR))?)

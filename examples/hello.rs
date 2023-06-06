@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use clap::Parser;
 use hyper_accelerator::{
-    application_context_trait::ApplicationContextTrait, body::Body, error::Error,
-    request_context_trait::RequestContextTrait, request_handler::ErrorResponse,
+    application_context_trait::ApplicationContextTrait, error::Error,
+    request_context_trait::RequestContextTrait, request_handler::{ErrorResponse, Response},
     server::run_http1_tcp_server,
 };
 
@@ -13,7 +13,7 @@ pub struct Cli {
     #[arg(
         short('l'),
         long("listener-address"),
-        help("Address where the server accepts the connections (e.g., 127.0.0.1)")
+        help("Address where the server accepts the connections (e.g., 127.0.0.1:80)")
     )]
     listener_address: String,
 }
@@ -31,8 +31,8 @@ async fn hello(
     _req: hyper::Request<hyper::body::Incoming>,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
-    Ok(hyper::Response::new("Hello World!".into()))
+) -> Result<Response, ErrorResponse> {
+    Ok(Response::new("Hello World!".into()))
 }
 
 #[tokio::main]

@@ -2,10 +2,9 @@ use std::sync::Arc;
 
 use crate::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     cookies::{cookies_iter, CookieType},
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait},
+    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
 };
 
 pub async fn debug_log_cookies<
@@ -17,7 +16,7 @@ pub async fn debug_log_cookies<
     app_context: Arc<ApplicationContextType>,
     request_context: RequestContextType,
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     log::debug!("STARTING debug_log_cookies");
 
     for cookie in cookies_iter(CookieType::Cookie, req.headers()) {

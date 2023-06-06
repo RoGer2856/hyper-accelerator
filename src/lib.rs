@@ -56,9 +56,8 @@ mod test {
 
     use crate::{
         application_context_trait::ApplicationContextTrait,
-        body::Body,
         request_context_trait::RequestContextTrait,
-        request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait},
+        request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
     };
 
     use super::*;
@@ -76,8 +75,8 @@ mod test {
         _req: hyper::Request<hyper::body::Incoming>,
         _app_context: Arc<ApplicationContext>,
         _req_context: RequestContext,
-    ) -> Result<hyper::Response<Body>, ErrorResponse> {
-        Ok(hyper::Response::new("".into()))
+    ) -> Result<Response, ErrorResponse> {
+        Ok(Response::new("".into()))
     }
 
     async fn dummy_decorator<
@@ -89,7 +88,7 @@ mod test {
         app_context: Arc<ApplicationContextType>,
         req_context: RequestContextType,
         next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
-    ) -> Result<hyper::Response<Body>, ErrorResponse> {
+    ) -> Result<Response, ErrorResponse> {
         return next(req, app_context, req_context).await;
     }
 

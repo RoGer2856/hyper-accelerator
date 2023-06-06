@@ -5,7 +5,7 @@ use crate::{
     body::Body,
     create_request_handler_call_chain,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait},
+    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
     server::run_http1_tcp_server,
 };
 
@@ -24,8 +24,8 @@ async fn test_request_handler(
     _req: hyper::Request<hyper::body::Incoming>,
     _app_context: Arc<TestApplicationContext>,
     _request_context: TestRequestContext,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
-    Ok(hyper::Response::new("test_request_handler".into()))
+) -> Result<Response, ErrorResponse> {
+    Ok(Response::new("test_request_handler".into()))
 }
 
 trait TestMiddlewareTrait {
@@ -48,7 +48,7 @@ async fn test_middleware<
     app_context: Arc<ApplicationContextType>,
     mut request_context: RequestContextType,
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
-) -> Result<hyper::Response<Body>, ErrorResponse> {
+) -> Result<Response, ErrorResponse> {
     request_context.set_called();
     match next(req, app_context, request_context).await {
         Ok(mut response) => {
