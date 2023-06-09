@@ -1,4 +1,4 @@
-use crate::body::{AsyncStream, Body};
+use crate::response_body::{AsyncStream, ResponseBody};
 
 #[derive(Debug)]
 pub enum SerializeToJsonBodyError {
@@ -11,22 +11,24 @@ impl From<serde_json::Error> for SerializeToJsonBodyError {
     }
 }
 
-pub fn create_json_body<T: serde::Serialize>(data: &T) -> Result<Body, SerializeToJsonBodyError> {
-    Ok(Body::from(serde_json::to_string(data)?))
+pub fn create_json_body<T: serde::Serialize>(
+    data: &T,
+) -> Result<ResponseBody, SerializeToJsonBodyError> {
+    Ok(ResponseBody::from(serde_json::to_string(data)?))
 }
 
-pub fn create_static_str_body(text: &'static str) -> Body {
-    Body::from(text)
+pub fn create_static_str_body(text: &'static str) -> ResponseBody {
+    ResponseBody::from(text)
 }
 
-pub fn create_string_body(text: impl ToString) -> Body {
-    Body::from(text.to_string())
+pub fn create_string_body(text: impl ToString) -> ResponseBody {
+    ResponseBody::from(text.to_string())
 }
 
-pub fn create_bytes_body(bytes: &[u8]) -> Body {
-    Body::from(Vec::from(bytes))
+pub fn create_bytes_body(bytes: &[u8]) -> ResponseBody {
+    ResponseBody::from(Vec::from(bytes))
 }
 
-pub fn create_stream_body(stream: impl AsyncStream<Vec<u8>>) -> Body {
-    Body::from(stream)
+pub fn create_stream_body(stream: impl AsyncStream<Vec<u8>>) -> ResponseBody {
+    ResponseBody::from(stream)
 }

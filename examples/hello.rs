@@ -2,8 +2,10 @@ use std::sync::Arc;
 
 use clap::Parser;
 use hyper_accelerator::{
-    application_context_trait::ApplicationContextTrait, error::Error,
-    request_context_trait::RequestContextTrait, request_handler::{ErrorResponse, Response},
+    application_context_trait::ApplicationContextTrait,
+    error::Error,
+    request_context_trait::RequestContextTrait,
+    request_handler::{ErrorResponse, Request, Response},
     server::run_http1_tcp_server,
 };
 
@@ -28,7 +30,7 @@ struct RequestContext;
 impl RequestContextTrait for RequestContext {}
 
 async fn hello(
-    _req: hyper::Request<hyper::body::Incoming>,
+    _req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
 ) -> Result<Response, ErrorResponse> {

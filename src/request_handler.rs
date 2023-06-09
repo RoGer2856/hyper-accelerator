@@ -1,11 +1,14 @@
 use std::{future::Future, sync::Arc};
 
 use crate::{
-    application_context_trait::ApplicationContextTrait, body::Body,
-    request_context_trait::RequestContextTrait,
+    application_context_trait::ApplicationContextTrait, request_context_trait::RequestContextTrait,
+    response_body::ResponseBody,
 };
 
-pub type Response = hyper::Response<Body>;
+pub type RequestBody = hyper::body::Incoming;
+pub type Request = hyper::Request<RequestBody>;
+
+pub type Response = hyper::Response<ResponseBody>;
 pub struct ErrorResponse(pub Response);
 
 impl<T> From<T> for ErrorResponse
@@ -32,14 +35,7 @@ pub trait RequestHandlerFn<
     RequestContextType: RequestContextTrait,
     ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
 >:
-    Fn(
-        hyper::Request<hyper::body::Incoming>,
-        Arc<ApplicationContextType>,
-        RequestContextType,
-    ) -> ReturnType
-    + Send
-    + Sync
-    + 'static
+    Fn(Request, Arc<ApplicationContextType>, RequestContextType) -> ReturnType + Send + Sync + 'static
 {
 }
 
@@ -47,11 +43,7 @@ impl<
         ApplicationContextType: ApplicationContextTrait,
         RequestContextType: RequestContextTrait,
         ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
-        T: Fn(
-                hyper::Request<hyper::body::Incoming>,
-                Arc<ApplicationContextType>,
-                RequestContextType,
-            ) -> ReturnType
+        T: Fn(Request, Arc<ApplicationContextType>, RequestContextType) -> ReturnType
             + Send
             + Sync
             + 'static,

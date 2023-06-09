@@ -2,7 +2,7 @@
 
 pub mod app_loop_state;
 pub mod application_context_trait;
-pub mod body;
+pub mod body_ext;
 pub mod body_utils;
 pub mod content_type;
 pub mod cookies;
@@ -14,6 +14,7 @@ pub mod prelude;
 pub mod request_context_trait;
 pub mod request_handler;
 pub mod response;
+pub mod response_body;
 pub mod routing;
 pub mod server;
 
@@ -57,7 +58,9 @@ mod test {
     use crate::{
         application_context_trait::ApplicationContextTrait,
         request_context_trait::RequestContextTrait,
-        request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
+        request_handler::{
+            ErrorResponse, Request, RequestHandlerFn, RequestHandlerReturnTrait, Response,
+        },
     };
 
     use super::*;
@@ -72,7 +75,7 @@ mod test {
     impl RequestContextTrait for RequestContext {}
 
     async fn request_handler(
-        _req: hyper::Request<hyper::body::Incoming>,
+        _req: Request,
         _app_context: Arc<ApplicationContext>,
         _req_context: RequestContext,
     ) -> Result<Response, ErrorResponse> {
@@ -84,7 +87,7 @@ mod test {
         RequestContextType: RequestContextTrait,
         NextReturnType: RequestHandlerReturnTrait,
     >(
-        req: hyper::Request<hyper::body::Incoming>,
+        req: Request,
         app_context: Arc<ApplicationContextType>,
         req_context: RequestContextType,
         next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

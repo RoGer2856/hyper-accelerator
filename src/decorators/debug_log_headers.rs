@@ -3,7 +3,9 @@ use std::sync::Arc;
 use crate::{
     application_context_trait::ApplicationContextTrait,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
+    request_handler::{
+        ErrorResponse, Request, RequestHandlerFn, RequestHandlerReturnTrait, Response,
+    },
 };
 
 pub async fn debug_log_headers<
@@ -11,7 +13,7 @@ pub async fn debug_log_headers<
     RequestContextType: RequestContextTrait,
     NextReturnType: RequestHandlerReturnTrait,
 >(
-    req: hyper::Request<hyper::body::Incoming>,
+    req: Request,
     app_context: Arc<ApplicationContextType>,
     request_context: RequestContextType,
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

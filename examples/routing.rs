@@ -9,7 +9,7 @@ use hyper_accelerator::{
     error::Error,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, Response},
+    request_handler::{ErrorResponse, Request, Response},
     response::{create_empty_response, create_json_response},
     routing::{router_fn, RouterBuilder},
     server::run_http1_tcp_server,
@@ -36,7 +36,7 @@ struct RequestContext;
 impl RequestContextTrait for RequestContext {}
 
 async fn index(
-    _req: hyper::Request<hyper::body::Incoming>,
+    _req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
 ) -> Result<Response, ErrorResponse> {
@@ -48,7 +48,7 @@ async fn index(
 }
 
 async fn hello(
-    _req: hyper::Request<hyper::body::Incoming>,
+    _req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
 ) -> Result<Response, ErrorResponse> {
@@ -56,7 +56,7 @@ async fn hello(
 }
 
 async fn echo(
-    req: hyper::Request<hyper::body::Incoming>,
+    req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
 ) -> Result<Response, ErrorResponse> {
@@ -81,7 +81,7 @@ struct Resource {
 }
 
 async fn resource_by_id(
-    _req: hyper::Request<hyper::body::Incoming>,
+    _req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
     id: String,

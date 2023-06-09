@@ -4,7 +4,9 @@ use crate::{
     application_context_trait::ApplicationContextTrait,
     cookies::{cookies_iter, CookieType},
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
+    request_handler::{
+        ErrorResponse, Request, RequestHandlerFn, RequestHandlerReturnTrait, Response,
+    },
 };
 
 pub async fn debug_log_cookies<
@@ -12,7 +14,7 @@ pub async fn debug_log_cookies<
     RequestContextType: RequestContextTrait,
     NextReturnType: RequestHandlerReturnTrait,
 >(
-    req: hyper::Request<hyper::body::Incoming>,
+    req: Request,
     app_context: Arc<ApplicationContextType>,
     request_context: RequestContextType,
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

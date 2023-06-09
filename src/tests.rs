@@ -2,10 +2,12 @@ use std::sync::{atomic::AtomicBool, Arc};
 
 use crate::{
     application_context_trait::ApplicationContextTrait,
-    body::Body,
     create_request_handler_call_chain,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
+    request_handler::{
+        ErrorResponse, Request, RequestHandlerFn, RequestHandlerReturnTrait, Response,
+    },
+    response_body::ResponseBody,
     server::run_http1_tcp_server,
 };
 
@@ -21,7 +23,7 @@ struct TestRequestContext {
 impl RequestContextTrait for TestRequestContext {}
 
 async fn test_request_handler(
-    _req: hyper::Request<hyper::body::Incoming>,
+    _req: Request,
     _app_context: Arc<TestApplicationContext>,
     _request_context: TestRequestContext,
 ) -> Result<Response, ErrorResponse> {
@@ -44,7 +46,7 @@ async fn test_middleware<
     RequestContextType: RequestContextTrait + TestMiddlewareTrait,
     NextReturnType: RequestHandlerReturnTrait,
 >(
-    req: hyper::Request<hyper::body::Incoming>,
+    req: Request,
     app_context: Arc<ApplicationContextType>,
     mut request_context: RequestContextType,
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
@@ -55,7 +57,7 @@ async fn test_middleware<
             let mut payload = response.body_mut().read_all().await.unwrap();
             let mut new_payload = Vec::from("test_middleware.".as_bytes());
             new_payload.append(&mut payload);
-            *response.body_mut() = Body::from(new_payload);
+            *response.body_mut() = ResponseBody::from(new_payload);
             Ok(response)
         }
         Err(response) => Err(response),

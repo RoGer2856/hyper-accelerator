@@ -1,3 +1,5 @@
+use hyper::http::HeaderValue;
+
 pub enum ContentType {
     AudioAac,
     AudioMidi,
@@ -56,6 +58,12 @@ pub enum ContentType {
     VideoOgv,
     VideoTransportStream,
     VideoWebm,
+}
+
+impl From<ContentType> for HeaderValue {
+    fn from(value: ContentType) -> Self {
+        HeaderValue::from_static(value.into())
+    }
 }
 
 impl From<ContentType> for &'static str {

@@ -5,7 +5,7 @@ use regex::Regex;
 use crate::{
     application_context_trait::ApplicationContextTrait,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, Response},
+    request_handler::{ErrorResponse, Request, RequestHandlerFn, Response},
     response::create_empty_response,
 };
 
@@ -19,7 +19,7 @@ type RouterFnType<
 > = Pin<
     Box<
         dyn Fn(
-                hyper::Request<hyper::body::Incoming>,
+                Request,
                 Arc<ApplicationContextType>,
                 RequestContextType,
                 regex::Captures,
@@ -97,7 +97,7 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
         methods: &[hyper::Method],
         path: impl ToString,
         request_handler: impl Fn(
-                hyper::Request<hyper::body::Incoming>,
+                Request,
                 Arc<ApplicationContextType>,
                 RequestContextType,
                 regex::Captures,
@@ -134,7 +134,7 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
 {
     pub async fn dispatch(
         &self,
-        req: hyper::Request<hyper::body::Incoming>,
+        req: Request,
         app_context: Arc<ApplicationContextType>,
         request_context: RequestContextType,
     ) -> Result<Response, ErrorResponse> {
@@ -166,7 +166,7 @@ pub async fn router_fn<
     ApplicationContextType: ApplicationContextTrait,
     RequestContextType: RequestContextTrait,
 >(
-    req: hyper::Request<hyper::body::Incoming>,
+    req: Request,
     router: Arc<Router<ApplicationContextType, RequestContextType>>,
     request_context: RequestContextType,
 ) -> Result<Response, ErrorResponse> {

@@ -1,12 +1,16 @@
+#![allow(unstable_name_collisions)]
+
 use std::sync::Arc;
 
 use clap::Parser;
 use hyper_accelerator::{
     application_context_trait::ApplicationContextTrait,
-    create_request_handler_call_chain, decorators,
+    body_ext::BodyExt,
+    content_type::ContentType,
     error::Error,
     request_context_trait::RequestContextTrait,
     request_handler::{ErrorResponse, Request, Response},
+    response::{create_bytes_response, create_empty_response},
     server::run_http1_tcp_server,
 };
 
@@ -30,12 +34,32 @@ struct RequestContext;
 
 impl RequestContextTrait for RequestContext {}
 
-async fn hello(
-    _req: Request,
+#[derive(serde::Serialize)]
+struct SerializableResponse {
+    message: String,
+}
+
+async fn echo_body(
+    req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
 ) -> Result<Response, ErrorResponse> {
-    Ok(Response::new("Hello World!".into()))
+    let (parts, body) = req.into_parts();
+
+    let content_type = parts
+        .headers
+        .get("Content-Type")
+        .cloned()
+        .unwrap_or_else(|| ContentType::ApplicationOctetstream.into());
+
+    let (payload, _trailers) = body.collect().await.aggregate();
+    let payload = payload.ok_or_else(|| create_empty_response(hyper::StatusCode::BAD_REQUEST))?;
+
+    Ok(create_bytes_response(
+        hyper::StatusCode::OK,
+        payload.as_ref(),
+        content_type,
+    ))
 }
 
 #[tokio::main]
@@ -48,16 +72,8 @@ async fn main() -> Result<(), Error> {
 
     log::info!("Starting application!");
 
-    let server_task = run_http1_tcp_server(
-        cli.listener_address,
-        create_request_handler_call_chain!(
-            decorators::debug_log_headers,
-            decorators::debug_log_cookies,
-            hello
-        ),
-        ApplicationContext,
-    )
-    .await?;
+    let server_task =
+        run_http1_tcp_server(cli.listener_address, echo_body, ApplicationContext).await?;
     server_task.await??;
 
     Ok(())

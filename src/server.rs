@@ -10,7 +10,7 @@ use crate::{
     application_context_trait::ApplicationContextTrait,
     error::Error,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, Response},
+    request_handler::{ErrorResponse, Request, RequestHandlerFn, Response},
 };
 
 pub async fn run_http1_tcp_server<
@@ -37,7 +37,7 @@ pub async fn run_http1_tcp_server<
             let application_context = application_context.clone();
 
             tokio::task::spawn(async move {
-                let service = service_fn(move |req: hyper::Request<hyper::body::Incoming>| {
+                let service = service_fn(move |req: Request| {
                     service_helper(request_handler(
                         req,
                         application_context.clone(),

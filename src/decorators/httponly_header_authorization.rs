@@ -4,7 +4,9 @@ use crate::{
     application_context_trait::ApplicationContextTrait,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, RequestHandlerFn, RequestHandlerReturnTrait, Response},
+    request_handler::{
+        ErrorResponse, Request, RequestHandlerFn, RequestHandlerReturnTrait, Response,
+    },
     response::create_empty_response,
 };
 
@@ -63,7 +65,7 @@ pub async fn access_token_handler<
     RequestContextType: RequestContextTrait + AuthenticatorRequestContext,
     NextReturnType: RequestHandlerReturnTrait,
 >(
-    req: hyper::Request<hyper::body::Incoming>,
+    req: Request,
     app_context: Arc<ApplicationContextType>,
     mut request_context: RequestContextType,
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

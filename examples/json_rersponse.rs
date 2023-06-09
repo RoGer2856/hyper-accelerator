@@ -9,7 +9,7 @@ use hyper_accelerator::{
     error::Error,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, Response},
+    request_handler::{ErrorResponse, Request, Response},
     response::{create_empty_response, create_json_response},
     server::run_http1_tcp_server,
 };
@@ -40,7 +40,7 @@ struct SerializableResponse {
 }
 
 async fn hello(
-    _req: hyper::Request<hyper::body::Incoming>,
+    _req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
 ) -> Result<Response, ErrorResponse> {

@@ -4,7 +4,7 @@ use std::path::Path;
 
 use tokio::io::AsyncReadExt;
 
-use crate::{body::AsyncStream, error::Error};
+use crate::{error::Error, response_body::AsyncStream};
 
 pub struct FileStream {
     file: tokio::fs::File,

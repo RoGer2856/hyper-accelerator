@@ -12,7 +12,7 @@ use hyper_accelerator::{
     filestream::FileStream,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
-    request_handler::{ErrorResponse, Response},
+    request_handler::{ErrorResponse, Request, Response},
     response::{create_empty_response, create_file_response},
     server::run_http1_tcp_server,
 };
@@ -38,7 +38,7 @@ struct RequestContext;
 impl RequestContextTrait for RequestContext {}
 
 async fn file(
-    _req: hyper::Request<hyper::body::Incoming>,
+    _req: Request,
     _app_context: Arc<ApplicationContext>,
     _request_context: RequestContext,
 ) -> Result<Response, ErrorResponse> {
