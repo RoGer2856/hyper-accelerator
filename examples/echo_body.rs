@@ -48,7 +48,7 @@ async fn echo_body(
 
     let content_type = parts
         .headers
-        .get("Content-Type")
+        .get("content-type")
         .cloned()
         .unwrap_or_else(|| ContentType::ApplicationOctetstream.into());
 
