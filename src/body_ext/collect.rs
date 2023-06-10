@@ -1,10 +1,8 @@
-use hyper::HeaderMap;
-
 pub struct Collect<FrameDataType: hyper::body::Buf + Unpin>
 where
     FrameDataType: Sized,
 {
-    received_frames: Vec<hyper::body::Frame<FrameDataType>>,
+    pub(super) received_frames: Vec<hyper::body::Frame<FrameDataType>>,
 }
 
 impl<FrameDataType: hyper::body::Buf + Unpin> Collect<FrameDataType> {
@@ -28,7 +26,7 @@ impl<FrameDataType: hyper::body::Buf + Unpin> Collect<FrameDataType> {
                 Err(frame) => {
                     if let Ok(trailers) = frame.into_trailers() {
                         aggregated_trailers
-                            .get_or_insert_with(HeaderMap::new)
+                            .get_or_insert_with(hyper::HeaderMap::new)
                             .extend(trailers.into_iter());
                     }
                 }
@@ -44,8 +42,8 @@ where
     FrameDataType: hyper::body::Buf + Unpin,
     BodyType: hyper::body::Body<Data = FrameDataType> + Unpin,
 {
-    body: BodyType,
-    collect: Collect<FrameDataType>,
+    pub(super) body: BodyType,
+    pub(super) collect: Collect<FrameDataType>,
 }
 
 impl<BodyType, FrameDataType> std::future::Future for CollectFuture<BodyType, FrameDataType>
@@ -79,24 +77,4 @@ where
             }
         }
     }
-}
-
-pub trait BodyExt<FrameDataType: hyper::body::Buf + Unpin>:
-    hyper::body::Body<Data = FrameDataType> + Sized + Unpin
-{
-    fn collect(self) -> CollectFuture<Self, FrameDataType> {
-        CollectFuture {
-            body: self,
-            collect: Collect {
-                received_frames: Vec::new(),
-            },
-        }
-    }
-}
-
-impl<
-        FrameDataType: hyper::body::Buf + Unpin,
-        BodyType: hyper::body::Body<Data = FrameDataType> + Unpin,
-    > BodyExt<FrameDataType> for BodyType
-{
 }
