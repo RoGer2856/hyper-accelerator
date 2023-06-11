@@ -1,11 +1,14 @@
-pub struct Collect<FrameDataType: hyper::body::Buf + Unpin>
+pub struct Collect<FrameDataType>
 where
-    FrameDataType: Sized,
+    FrameDataType: hyper::body::Buf,
 {
     pub(super) received_frames: Vec<hyper::body::Frame<FrameDataType>>,
 }
 
-impl<FrameDataType: hyper::body::Buf + Unpin> Collect<FrameDataType> {
+impl<FrameDataType> Collect<FrameDataType>
+where
+    FrameDataType: hyper::body::Buf,
+{
     pub fn take(&mut self) -> Self {
         Self {
             received_frames: self.received_frames.drain(..).collect(),
