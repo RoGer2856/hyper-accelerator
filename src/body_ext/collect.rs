@@ -1,3 +1,5 @@
+use std::{future::Future, pin::Pin};
+
 pub struct Collect<FrameDataType>
 where
     FrameDataType: hyper::body::Buf,
@@ -49,34 +51,37 @@ where
     pub(super) collect: Collect<FrameDataType>,
 }
 
-impl<BodyType, FrameDataType> std::future::Future for CollectFuture<BodyType, FrameDataType>
+impl<BodyType, FrameDataType, BodyErrorType> Future for CollectFuture<BodyType, FrameDataType>
 where
     FrameDataType: hyper::body::Buf + Unpin,
-    BodyType: hyper::body::Body<Data = FrameDataType> + Unpin,
+    BodyType: hyper::body::Body<Data = FrameDataType, Error = BodyErrorType> + Unpin,
 {
-    type Output = Collect<FrameDataType>;
+    type Output = Result<Collect<FrameDataType>, BodyErrorType>;
 
     fn poll(
-        mut self: std::pin::Pin<&mut Self>,
+        mut self: Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Self::Output> {
         let mut self_mut = self.as_mut();
 
         loop {
-            let mut body = std::pin::Pin::new(&mut self_mut.body);
+            let mut body = Pin::new(&mut self_mut.body);
             let frame = match body.as_mut().poll_frame(cx) {
                 std::task::Poll::Pending => return std::task::Poll::Pending,
                 std::task::Poll::Ready(frame) => frame,
             };
 
             if let Some(frame) = frame {
-                if let Ok(frame) = frame {
-                    self_mut.collect.received_frames.push(frame);
-                } else {
-                    unreachable!();
+                match frame {
+                    Ok(frame) => {
+                        self_mut.collect.received_frames.push(frame);
+                    }
+                    Err(e) => {
+                        return std::task::Poll::Ready(Err(e));
+                    }
                 }
             } else {
-                return std::task::Poll::Ready(self_mut.collect.take());
+                return std::task::Poll::Ready(Ok(self_mut.collect.take()));
             }
         }
     }

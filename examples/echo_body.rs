@@ -8,6 +8,7 @@ use hyper_accelerator::{
     body_ext::BodyExt,
     content_type::ContentType,
     error::Error,
+    prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
     request_handler::{ErrorResponse, Request, Response},
     response::{create_bytes_response, create_empty_response},
@@ -52,7 +53,12 @@ async fn echo_body(
         .cloned()
         .unwrap_or_else(|| ContentType::ApplicationOctetstream.into());
 
-    let (payload, _trailers) = body.collect().await.aggregate();
+    let (payload, _trailers) = body
+        .collect()
+        .await
+        .inspect_err(|e| log::warn!("Error while reading payload, error = {e:?}"))
+        .map_err(|_| create_empty_response(hyper::StatusCode::INTERNAL_SERVER_ERROR))?
+        .aggregate();
     let payload = payload.ok_or_else(|| create_empty_response(hyper::StatusCode::BAD_REQUEST))?;
 
     Ok(create_bytes_response(
