@@ -1,16 +1,31 @@
 use std::{future::Future, pin::Pin};
 
+impl<FrameDataType> Default for Collect<FrameDataType>
+where
+    FrameDataType: hyper::body::Buf,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct Collect<FrameDataType>
 where
     FrameDataType: hyper::body::Buf,
 {
-    pub(super) received_frames: Vec<hyper::body::Frame<FrameDataType>>,
+    received_frames: Vec<hyper::body::Frame<FrameDataType>>,
 }
 
 impl<FrameDataType> Collect<FrameDataType>
 where
     FrameDataType: hyper::body::Buf,
 {
+    pub fn new() -> Self {
+        Self {
+            received_frames: Vec::new(),
+        }
+    }
+
     pub fn take(&mut self) -> Self {
         Self {
             received_frames: self.received_frames.drain(..).collect(),

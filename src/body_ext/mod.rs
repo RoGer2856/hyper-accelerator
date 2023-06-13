@@ -1,6 +1,10 @@
-use self::collect::{Collect, CollectFuture};
+use self::{
+    collect::{Collect, CollectFuture},
+    frame_iter::FrameIter,
+};
 
 pub mod collect;
+pub mod frame_iter;
 
 pub trait BodyExt<FrameDataType: hyper::body::Buf + Unpin>:
     hyper::body::Body<Data = FrameDataType> + Sized + Unpin
@@ -8,10 +12,12 @@ pub trait BodyExt<FrameDataType: hyper::body::Buf + Unpin>:
     fn collect(self) -> CollectFuture<Self, FrameDataType> {
         CollectFuture {
             body: self,
-            collect: Collect {
-                received_frames: Vec::new(),
-            },
+            collect: Collect::new(),
         }
+    }
+
+    fn frame_iter(self) -> FrameIter<Self, FrameDataType> {
+        FrameIter { body: self }
     }
 }
 
