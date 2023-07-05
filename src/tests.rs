@@ -46,10 +46,10 @@ async fn test_middleware<
     RequestContextType: RequestContextTrait + TestMiddlewareTrait,
     NextReturnType: RequestHandlerReturnTrait,
 >(
+    next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
     req: Request,
     app_context: Arc<ApplicationContextType>,
     mut request_context: RequestContextType,
-    next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
 ) -> Result<Response, ErrorResponse> {
     request_context.set_called();
     match next(req, app_context, request_context).await {

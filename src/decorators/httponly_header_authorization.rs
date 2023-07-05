@@ -65,10 +65,10 @@ pub async fn access_token_handler<
     RequestContextType: RequestContextTrait + AuthenticatorRequestContext,
     NextReturnType: RequestHandlerReturnTrait,
 >(
+    next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
     req: Request,
     app_context: Arc<ApplicationContextType>,
     mut request_context: RequestContextType,
-    next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
 ) -> Result<Response, ErrorResponse> {
     let mut access_token = None;
     for cookie in crate::cookies::cookies_iter(crate::cookies::CookieType::Cookie, req.headers()) {

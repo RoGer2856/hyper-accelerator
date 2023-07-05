@@ -36,7 +36,7 @@ macro_rules! create_request_handler_call_chain {
         // println!("{}(req, app_context, req_context, {}).await", stringify!($decorator0), stringify!($decorator1));
         // println!("}}");
         |req, app_context, req_context| async move {
-            $decorator0(req, app_context, req_context, $decorator1).await
+            $decorator0($decorator1, req, app_context, req_context).await
         }
     };
     ($decorator0:path, $decorator1:path $(, $decorators:path)+ $(,)?) => {
@@ -46,7 +46,7 @@ macro_rules! create_request_handler_call_chain {
         // println!(").await");
         // println!("}}");
         |req, app_context, req_context| async move {
-            $decorator0(req, app_context, req_context, create_request_handler_call_chain!($decorator1 $(, $decorators)*)).await
+            $decorator0(create_request_handler_call_chain!($decorator1 $(, $decorators)*), req, app_context, req_context).await
         }
     };
 }
@@ -87,10 +87,10 @@ mod test {
         RequestContextType: RequestContextTrait,
         NextReturnType: RequestHandlerReturnTrait,
     >(
+        next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
         req: Request,
         app_context: Arc<ApplicationContextType>,
         req_context: RequestContextType,
-        next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
     ) -> Result<Response, ErrorResponse> {
         return next(req, app_context, req_context).await;
     }

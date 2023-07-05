@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use clap::Parser;
+use fn_decorator::use_decorator;
 use hyper_accelerator::{
     application_context_trait::ApplicationContextTrait,
     create_request_handler_call_chain, decorators,
@@ -30,6 +31,7 @@ struct RequestContext;
 
 impl RequestContextTrait for RequestContext {}
 
+#[use_decorator(decorators::debug_log_headers())]
 async fn hello(
     _req: Request,
     _app_context: Arc<ApplicationContext>,

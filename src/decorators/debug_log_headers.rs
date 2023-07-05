@@ -13,10 +13,10 @@ pub async fn debug_log_headers<
     RequestContextType: RequestContextTrait,
     NextReturnType: RequestHandlerReturnTrait,
 >(
+    next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
     req: Request,
     app_context: Arc<ApplicationContextType>,
     request_context: RequestContextType,
-    next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,
 ) -> Result<Response, ErrorResponse> {
     log::debug!("STARTING debug_log_headers");
 

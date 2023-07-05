@@ -27,3 +27,4 @@ env_logger = "0.10"
 querystring = "1.1"
 serde = { version = "*", features = ["derive"] }
 clap = { version = "4.2", features = ["derive"] }
+fn-decorator = "1"
