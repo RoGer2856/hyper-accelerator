@@ -170,8 +170,6 @@ pub async fn router_fn<
     router: Arc<Router<ApplicationContextType, RequestContextType>>,
     request_context: RequestContextType,
 ) -> Result<Response, ErrorResponse> {
-    log::debug!("Request = {} {}", req.method(), req.uri().path());
-
     router
         .as_ref()
         .dispatch(req, router.app_context.clone(), request_context)
