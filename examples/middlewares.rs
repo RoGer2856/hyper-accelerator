@@ -31,7 +31,7 @@ struct RequestContext;
 
 impl RequestContextTrait for RequestContext {}
 
-#[use_decorator(decorators::debug_log_headers())]
+#[use_decorator(decorators::debug_log_cookies())]
 async fn hello(
     _req: Request,
     _app_context: Arc<ApplicationContext>,
@@ -53,8 +53,8 @@ async fn main() -> Result<(), Error> {
     let server_task = run_http1_tcp_server(
         cli.listener_address,
         create_request_handler_call_chain!(
+            decorators::debug_log_request_line,
             decorators::debug_log_headers,
-            decorators::debug_log_cookies,
             hello
         ),
         ApplicationContext,
