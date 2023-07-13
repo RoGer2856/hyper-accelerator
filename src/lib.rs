@@ -24,29 +24,29 @@ mod tests;
 #[macro_export]
 macro_rules! create_request_handler_call_chain {
     ($request_handler:path $(,)?) => {
-        // println!("|req, app_context, req_context| async move {{");
-        // println!("{}(req, app_context, req_context).await", stringify!($request_handler));
+        // println!("|req, app_context, req_context| {{");
+        // println!("{}(req, app_context, req_context)", stringify!($request_handler));
         // println!("}}");
-        |req, app_context, req_context| async move {
-            $request_handler(req, app_context, req_context).await
+        |req, app_context, req_context| {
+            $request_handler(req, app_context, req_context)
         }
     };
     ($decorator0:path, $decorator1:path $(,)?) => {
-        // println!("|req, app_context, req_context| async move {{");
-        // println!("{}(req, app_context, req_context, {}).await", stringify!($decorator0), stringify!($decorator1));
+        // println!("|req, app_context, req_context| {{");
+        // println!("{}({}, req, app_context, req_context)", stringify!($decorator0), stringify!($decorator1));
         // println!("}}");
-        |req, app_context, req_context| async move {
-            $decorator0($decorator1, req, app_context, req_context).await
+        |req, app_context, req_context| {
+            $decorator0($decorator1, req, app_context, req_context)
         }
     };
     ($decorator0:path, $decorator1:path $(, $decorators:path)+ $(,)?) => {
-        // println!("|req, app_context, req_context| async move {{");
+        // println!("|req, app_context, req_context| {{");
         // println!("{}(req, app_context, req_context, ", stringify!($decorator0));
         // create_request_handler_call_chain!($decorator1 $(, $decorators)*);
-        // println!(").await");
+        // println!(")");
         // println!("}}");
-        |req, app_context, req_context| async move {
-            $decorator0(create_request_handler_call_chain!($decorator1 $(, $decorators)*), req, app_context, req_context).await
+        |req, app_context, req_context| {
+            $decorator0(create_request_handler_call_chain!($decorator1 $(, $decorators)*), req, app_context, req_context)
         }
     };
 }
