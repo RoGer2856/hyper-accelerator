@@ -1,4 +1,4 @@
-use std::{future::Future, pin::Pin, sync::Arc};
+use std::{future::Future, ops::Deref, pin::Pin, sync::Arc};
 
 use regex::Regex;
 
@@ -51,6 +51,16 @@ pub struct Router<
 > {
     app_context: Arc<ApplicationContextType>,
     routing_table: Arc<Vec<RoutingRecord<ApplicationContextType, RequestContextType>>>,
+}
+
+impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: RequestContextTrait> Deref
+    for Router<ApplicationContextType, RequestContextType>
+{
+    type Target = ApplicationContextType;
+
+    fn deref(&self) -> &Self::Target {
+        &self.app_context
+    }
 }
 
 impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: RequestContextTrait>

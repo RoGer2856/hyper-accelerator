@@ -6,6 +6,8 @@ use clap::Parser;
 use hyper::StatusCode;
 use hyper_accelerator::{
     application_context_trait::ApplicationContextTrait,
+    create_request_handler_call_chain,
+    decorators::{debug_log_cookies, debug_log_headers, debug_log_request_line},
     error::Error,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
@@ -119,7 +121,17 @@ async fn main() -> Result<(), Error> {
         )?
         .build(ApplicationContext);
 
-    let server_task = run_http1_tcp_server(cli.listener_address, router_fn, router).await?;
+    let server_task = run_http1_tcp_server(
+        cli.listener_address,
+        create_request_handler_call_chain!(
+            debug_log_request_line,
+            debug_log_headers,
+            debug_log_cookies,
+            router_fn
+        ),
+        router,
+    )
+    .await?;
     server_task.await??;
 
     Ok(())

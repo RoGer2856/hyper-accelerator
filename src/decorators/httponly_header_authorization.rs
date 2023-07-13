@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{ops::Deref, sync::Arc};
 
 use crate::{
     application_context_trait::ApplicationContextTrait,
@@ -104,5 +104,19 @@ pub async fn access_token_handler<
         }
     } else {
         ret
+    }
+}
+
+impl<
+        T: Deref<Target = AuthenticatorApplicationContextType>,
+        AuthenticatorApplicationContextType: AuthenticatorApplicationContext,
+    > AuthenticatorApplicationContext for T
+{
+    fn update_access_token(&self, access_token: String) -> Result<String, AuthenticatorError> {
+        self.deref().update_access_token(access_token)
+    }
+
+    fn verify_access_token(&self, access_token: &str) -> Result<(), AuthenticatorError> {
+        self.deref().verify_access_token(access_token)
     }
 }
