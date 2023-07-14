@@ -1,5 +1,7 @@
 use std::{ops::Deref, sync::Arc};
 
+use cookie::time::OffsetDateTime;
+
 use crate::{
     application_context_trait::ApplicationContextTrait,
     prelude::ResultInspector,
@@ -45,18 +47,40 @@ pub trait AuthenticatorRequestContext {
     fn set_verified_access_token(&mut self, access_token: &str);
 }
 
+pub enum AccessTokenAction {
+    Add(String),
+    Delete,
+}
+
 pub fn add_access_token_to_resp(
-    access_token: String,
+    access_token_action: AccessTokenAction,
     resp: &mut Response,
 ) -> Result<(), AuthenticatorError> {
-    let header_name = "Set-Cookie";
-    let cookie = cookie::CookieBuilder::new("access_token", access_token)
+    let (value, delete) = match &access_token_action {
+        AccessTokenAction::Add(access_token) => (access_token.as_str(), false),
+        AccessTokenAction::Delete => ("delete", true),
+    };
+
+    let cookie_builder = cookie::CookieBuilder::new("access_token", value)
         .http_only(true)
-        .same_site(cookie::SameSite::Strict)
-        .finish();
-    let header_value = hyper::header::HeaderValue::from_str(&cookie.to_string())
-        .inspect_err(|_| log::error!("Cannot convert access_token to header value"))?;
+        .same_site(cookie::SameSite::Strict);
+
+    let cookie_builder = if delete {
+        cookie_builder.expires(OffsetDateTime::UNIX_EPOCH)
+    } else {
+        cookie_builder
+    };
+
+    let cookie = cookie_builder.finish();
+
+    let header_value =
+        hyper::header::HeaderValue::from_str(&cookie.to_string()).inspect_err(|_| {
+            log::error!("add_access_token_to_resp: cannot convert access_token to header value")
+        })?;
+
+    let header_name = "Set-Cookie";
     resp.headers_mut().insert(header_name, header_value);
+
     Ok(())
 }
 
@@ -94,11 +118,11 @@ pub async fn access_token_handler<
 
         match ret {
             Ok(mut resp) => {
-                add_access_token_to_resp(access_token, &mut resp)?;
+                add_access_token_to_resp(AccessTokenAction::Add(access_token), &mut resp)?;
                 Ok(resp)
             }
             Err(mut resp) => {
-                add_access_token_to_resp(access_token, &mut resp.0)?;
+                add_access_token_to_resp(AccessTokenAction::Add(access_token), &mut resp.0)?;
                 Err(resp)
             }
         }
