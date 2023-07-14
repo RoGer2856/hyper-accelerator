@@ -16,7 +16,7 @@ use crate::{
 pub async fn run_http1_tcp_server<
     SocketAddressType: ToSocketAddrs,
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
     ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
     RequestHandlerFnType: RequestHandlerFn<ApplicationContextType, RequestContextType, ReturnType>,
 >(
@@ -41,7 +41,7 @@ pub async fn run_http1_tcp_server<
                     service_helper(request_handler(
                         req,
                         application_context.clone(),
-                        RequestContextType::default(),
+                        RequestContextType::create(application_context.clone()),
                     ))
                 });
 

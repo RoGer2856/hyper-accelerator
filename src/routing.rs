@@ -15,7 +15,7 @@ type RouterFnReturnType =
 #[allow(type_alias_bounds)]
 type RouterFnType<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
 > = Pin<
     Box<
         dyn Fn(
@@ -31,7 +31,7 @@ type RouterFnType<
 
 struct RoutingRecord<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
 > {
     methods: Vec<hyper::Method>,
     path: Regex,
@@ -40,21 +40,23 @@ struct RoutingRecord<
 
 pub struct RouterBuilder<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
 > {
     routing_table: Vec<RoutingRecord<ApplicationContextType, RequestContextType>>,
 }
 
 pub struct Router<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
 > {
     app_context: Arc<ApplicationContextType>,
     routing_table: Arc<Vec<RoutingRecord<ApplicationContextType, RequestContextType>>>,
 }
 
-impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: RequestContextTrait> Deref
-    for Router<ApplicationContextType, RequestContextType>
+impl<
+        ApplicationContextType: ApplicationContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
+    > Deref for Router<ApplicationContextType, RequestContextType>
 {
     type Target = ApplicationContextType;
 
@@ -63,16 +65,20 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
     }
 }
 
-impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: RequestContextTrait>
-    Default for RouterBuilder<ApplicationContextType, RequestContextType>
+impl<
+        ApplicationContextType: ApplicationContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
+    > Default for RouterBuilder<ApplicationContextType, RequestContextType>
 {
     fn default() -> Self {
         RouterBuilder::new()
     }
 }
 
-impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: RequestContextTrait>
-    RouterBuilder<ApplicationContextType, RequestContextType>
+impl<
+        ApplicationContextType: ApplicationContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
+    > RouterBuilder<ApplicationContextType, RequestContextType>
 {
     pub fn new() -> Self {
         Self {
@@ -139,8 +145,10 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
     }
 }
 
-impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: RequestContextTrait>
-    Router<ApplicationContextType, RequestContextType>
+impl<
+        ApplicationContextType: ApplicationContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
+    > Router<ApplicationContextType, RequestContextType>
 {
     pub async fn dispatch(
         &self,
@@ -167,14 +175,27 @@ impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: Reques
     }
 }
 
-impl<ApplicationContextType: ApplicationContextTrait, RequestContextType: RequestContextTrait>
-    ApplicationContextTrait for Router<ApplicationContextType, RequestContextType>
+impl<
+        ApplicationContextType: ApplicationContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
+    > ApplicationContextTrait for Router<ApplicationContextType, RequestContextType>
 {
+}
+
+impl<
+        ApplicationContextType: ApplicationContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
+    > RequestContextTrait<Router<ApplicationContextType, RequestContextType>>
+    for RequestContextType
+{
+    fn create(app_context: Arc<Router<ApplicationContextType, RequestContextType>>) -> Self {
+        Self::create(app_context.app_context.clone())
+    }
 }
 
 pub async fn router_fn<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
 >(
     req: Request,
     router: Arc<Router<ApplicationContextType, RequestContextType>>,

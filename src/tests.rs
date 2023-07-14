@@ -15,12 +15,19 @@ struct TestApplicationContext;
 
 impl ApplicationContextTrait for TestApplicationContext {}
 
-#[derive(Default)]
 struct TestRequestContext {
+    _app_context: Arc<TestApplicationContext>,
     middleware_called: Arc<AtomicBool>,
 }
 
-impl RequestContextTrait for TestRequestContext {}
+impl RequestContextTrait<TestApplicationContext> for TestRequestContext {
+    fn create(app_context: Arc<TestApplicationContext>) -> Self {
+        Self {
+            _app_context: app_context,
+            middleware_called: Arc::new(AtomicBool::new(false)),
+        }
+    }
+}
 
 async fn test_request_handler(
     _req: Request,
@@ -43,7 +50,7 @@ impl TestMiddlewareTrait for TestRequestContext {
 
 async fn test_middleware<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait + TestMiddlewareTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType> + TestMiddlewareTrait,
     NextReturnType: RequestHandlerReturnTrait,
 >(
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

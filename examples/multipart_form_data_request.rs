@@ -32,10 +32,17 @@ struct ApplicationContext;
 
 impl ApplicationContextTrait for ApplicationContext {}
 
-#[derive(Default)]
-struct RequestContext;
+struct RequestContext {
+    _app_context: Arc<ApplicationContext>,
+}
 
-impl RequestContextTrait for RequestContext {}
+impl RequestContextTrait<ApplicationContext> for RequestContext {
+    fn create(app_context: Arc<ApplicationContext>) -> Self {
+        Self {
+            _app_context: app_context,
+        }
+    }
+}
 
 #[derive(serde::Serialize)]
 struct SerializableResponse {

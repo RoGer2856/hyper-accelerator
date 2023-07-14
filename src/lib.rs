@@ -69,10 +69,17 @@ mod test {
 
     impl ApplicationContextTrait for ApplicationContext {}
 
-    #[derive(Default)]
-    struct RequestContext;
+    struct RequestContext {
+        _app_context: Arc<ApplicationContext>,
+    }
 
-    impl RequestContextTrait for RequestContext {}
+    impl RequestContextTrait<ApplicationContext> for RequestContext {
+        fn create(app_context: Arc<ApplicationContext>) -> Self {
+            Self {
+                _app_context: app_context,
+            }
+        }
+    }
 
     async fn request_handler(
         _req: Request,
@@ -84,7 +91,7 @@ mod test {
 
     async fn dummy_decorator<
         ApplicationContextType: ApplicationContextTrait,
-        RequestContextType: RequestContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
         NextReturnType: RequestHandlerReturnTrait,
     >(
         next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

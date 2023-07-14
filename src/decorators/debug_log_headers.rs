@@ -10,7 +10,7 @@ use crate::{
 
 pub async fn debug_log_headers<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
     NextReturnType: RequestHandlerReturnTrait,
 >(
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

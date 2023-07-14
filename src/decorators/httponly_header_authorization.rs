@@ -62,7 +62,7 @@ pub fn add_access_token_to_resp(
 
 pub async fn access_token_handler<
     ApplicationContextType: ApplicationContextTrait + AuthenticatorApplicationContext,
-    RequestContextType: RequestContextTrait + AuthenticatorRequestContext,
+    RequestContextType: RequestContextTrait<ApplicationContextType> + AuthenticatorRequestContext,
     NextReturnType: RequestHandlerReturnTrait,
 >(
     next: impl RequestHandlerFn<ApplicationContextType, RequestContextType, NextReturnType>,

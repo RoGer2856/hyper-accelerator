@@ -26,10 +26,17 @@ struct ApplicationContext;
 
 impl ApplicationContextTrait for ApplicationContext {}
 
-#[derive(Default)]
-struct RequestContext;
+struct RequestContext {
+    _app_context: Arc<ApplicationContext>,
+}
 
-impl RequestContextTrait for RequestContext {}
+impl RequestContextTrait<ApplicationContext> for RequestContext {
+    fn create(app_context: Arc<ApplicationContext>) -> Self {
+        Self {
+            _app_context: app_context,
+        }
+    }
+}
 
 #[use_decorator(decorators::debug_log_cookies())]
 async fn hello(

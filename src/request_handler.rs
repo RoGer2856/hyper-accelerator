@@ -32,7 +32,7 @@ impl<T: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static
 
 pub trait RequestHandlerFn<
     ApplicationContextType: ApplicationContextTrait,
-    RequestContextType: RequestContextTrait,
+    RequestContextType: RequestContextTrait<ApplicationContextType>,
     ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
 >:
     Fn(Request, Arc<ApplicationContextType>, RequestContextType) -> ReturnType + Send + Sync + 'static
@@ -41,7 +41,7 @@ pub trait RequestHandlerFn<
 
 impl<
         ApplicationContextType: ApplicationContextTrait,
-        RequestContextType: RequestContextTrait,
+        RequestContextType: RequestContextTrait<ApplicationContextType>,
         ReturnType: Future<Output = Result<Response, ErrorResponse>> + Send + Sync + 'static,
         T: Fn(Request, Arc<ApplicationContextType>, RequestContextType) -> ReturnType
             + Send
