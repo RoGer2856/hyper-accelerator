@@ -16,7 +16,7 @@ hmac = "0.12.1"
 jwt = "0.16.0"
 sha2 = "0.10.2"
 crypto-common = "0.1.6"
-cookie = "0.17"
+cookie = { version = "0.17", features = ["percent-encode"] }
 regex = "1"
 multipart = "0.18"
 

@@ -4,12 +4,13 @@ use cookie::time::OffsetDateTime;
 
 use crate::{
     application_context_trait::ApplicationContextTrait,
+    content_type::ContentType,
     prelude::ResultInspector,
     request_context_trait::RequestContextTrait,
     request_handler::{
         ErrorResponse, Request, RequestHandlerFn, RequestHandlerReturnTrait, Response,
     },
-    response::create_empty_response,
+    response::{create_empty_response, create_static_str_response},
 };
 
 pub enum AuthenticatorError {
@@ -95,7 +96,14 @@ pub async fn access_token_handler<
     mut request_context: RequestContextType,
 ) -> Result<Response, ErrorResponse> {
     let mut access_token = None;
-    for cookie in crate::cookies::cookies_iter(crate::cookies::CookieType::Cookie, req.headers()) {
+    for cookie in crate::cookies::cookies_iter(req.headers()) {
+        let cookie = cookie.map_err(|_| {
+            create_static_str_response(
+                hyper::StatusCode::BAD_REQUEST,
+                "could not parse cookies",
+                ContentType::TextPlain,
+            )
+        })?;
         if cookie.name() == "access_token" && !crate::cookies::is_cookie_expired_by_date(&cookie) {
             let at = cookie.value().to_string();
             if let Ok(()) = app_context.verify_access_token(&at) {
